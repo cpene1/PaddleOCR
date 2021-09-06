@@ -36,6 +36,14 @@ logger = get_logger()
 
 class TextE2E(object):
     def __init__(self, args):
+        # Hardcoded runtime configurations for VTS
+        ########################
+        args.e2e_algorithm = "PGNet"
+        args.e2e_model_dir = "./PaddleOCR/inference/e2e_server_pgnetA_infer"
+        args.e2e_char_dict_path = "./PaddleOCR/ppocr/utils/ic15_dict.txt"
+        args.use_tensorrt = True
+        ########################
+
         self.args = args
         self.e2e_algorithm = args.e2e_algorithm
         pre_process_list = [{
@@ -71,7 +79,6 @@ class TextE2E(object):
         else:
             logger.info("unknown e2e_algorithm:{}".format(self.e2e_algorithm))
             sys.exit(0)
-
         self.preprocess_op = create_operators(pre_process_list)
         self.postprocess_op = build_post_process(postprocess_params)
         self.predictor, self.input_tensor, self.output_tensors = utility.create_predictor(
