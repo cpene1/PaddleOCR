@@ -13,16 +13,14 @@
 # limitations under the License.
 
 import argparse
+import math
 import os
 import sys
+
 import cv2
 import numpy as np
-import json
 from PIL import Image, ImageDraw, ImageFont
-import math
 from paddle import inference
-import time
-from ppocr.utils.logging import get_logger
 
 
 def str2bool(v):
@@ -120,7 +118,8 @@ def init_args():
 
 def parse_args():
     parser = init_args()
-    return parser.parse_args()
+    # return parser.parse_args()
+    return parser.parse_known_args()[0]
 
 
 def create_predictor(args, mode, logger):
@@ -238,7 +237,7 @@ def create_predictor(args, mode, logger):
 
     # enable memory optim
     config.enable_memory_optim()
-    #config.disable_glog_info()
+    # config.disable_glog_info()
 
     config.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")
     if mode == 'table':
@@ -363,10 +362,10 @@ def draw_ocr_box_txt(image,
                 box[2][1], box[3][0], box[3][1]
             ],
             outline=color)
-        box_height = math.sqrt((box[0][0] - box[3][0])**2 + (box[0][1] - box[3][
-            1])**2)
-        box_width = math.sqrt((box[0][0] - box[1][0])**2 + (box[0][1] - box[1][
-            1])**2)
+        box_height = math.sqrt((box[0][0] - box[3][0]) ** 2 + (box[0][1] - box[3][
+            1]) ** 2)
+        box_width = math.sqrt((box[0][0] - box[1][0]) ** 2 + (box[0][1] - box[1][
+            1]) ** 2)
         if box_height > 2 * box_width:
             font_size = max(int(box_width * 0.9), 10)
             font = ImageFont.truetype(font_path, font_size, encoding="utf-8")
