@@ -100,9 +100,9 @@ class TextE2E(object):
         dt_boxes = np.array(dt_boxes_new)
         return dt_boxes
 
-    def __call__(self, img):
-
-        ori_im = img.copy()
+    def __call__(self, img, debug=False):
+        tmp = time.time()
+        # ori_im = img.copy()
         data = {'image': img}
         data = transform(data, self.preprocess_op)
         img, shape_list = data
@@ -110,16 +110,28 @@ class TextE2E(object):
             return None, 0
         img = np.expand_dims(img, axis=0)
         shape_list = np.expand_dims(shape_list, axis=0)
-        img = img.copy()
-        starttime = time.time()
+        # img = img.copy()
+        # starttime = time.time()
+        if debug:
+            print("{} (preproc)".format(time.time() - tmp))
 
+        tmp = time.time()
         self.input_tensor.copy_from_cpu(img)
+        if debug:
+            print("{} (cpu->gpu)".format(time.time() - tmp))
+        tmp = time.time()
         self.predictor.run()
+        if debug:
+            print("{} (pred)".format(time.time() - tmp))
+        tmp = time.time()
         outputs = []
         for output_tensor in self.output_tensors:
             output = output_tensor.copy_to_cpu()
             outputs.append(output)
 
+        if debug:
+            print("{} (gpu->cpu)".format(time.time() - tmp))
+        tmp = time.time()
         preds = {}
         if self.e2e_algorithm == 'PGNet':
             preds['f_border'] = outputs[0]
@@ -130,9 +142,14 @@ class TextE2E(object):
             raise NotImplementedError
         post_result = self.postprocess_op(preds, shape_list)
         points, strs = post_result['points'], post_result['texts']
-        dt_boxes = self.filter_tag_det_res_only_clip(points, ori_im.shape)
-        elapse = time.time() - starttime
-        return dt_boxes, strs, elapse
+
+        if debug:
+            print("{} (postproc)".format(time.time() - tmp))
+
+        # dt_boxes = self.filter_tag_det_res_only_clip(points, ori_im.shape)
+        # elapse = time.time() - starttime
+        # return dt_boxes, strs, elapse
+        return None, strs, None
 
 
 if __name__ == "__main__":
