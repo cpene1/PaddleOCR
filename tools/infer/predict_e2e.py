@@ -41,7 +41,9 @@ class TextE2E(object):
         args.e2e_algorithm = "PGNet"
         args.e2e_model_dir = "./PaddleOCR/inference/e2e_server_pgnetA_infer"
         args.e2e_char_dict_path = "./PaddleOCR/ppocr/utils/ic15_dict.txt"
-        args.use_tensorrt = True
+        # args.e2e_model_dir = "./src/PaddleOCR/inference/e2e_server_pgnetA_infer"
+        # args.e2e_char_dict_path = "./src/PaddleOCR/ppocr/utils/ic15_dict.txt"
+        # args.use_tensorrt = True
         ########################
 
         self.args = args
@@ -112,25 +114,29 @@ class TextE2E(object):
         shape_list = np.expand_dims(shape_list, axis=0)
         # img = img.copy()
         # starttime = time.time()
+        time_preproc = time.time() - tmp
         if debug:
-            print("{} (preproc)".format(time.time() - tmp))
+            print("{} (preproc)".format(time_preproc))
 
         tmp = time.time()
         self.input_tensor.copy_from_cpu(img)
+        time_cpu_gpu = time.time() - tmp
         if debug:
-            print("{} (cpu->gpu)".format(time.time() - tmp))
+            print("{} (cpu->gpu)".format(time_cpu_gpu))
         tmp = time.time()
         self.predictor.run()
+        time_pred = time.time() - tmp
         if debug:
-            print("{} (pred)".format(time.time() - tmp))
+            print("{} (pred)".format(time_pred))
         tmp = time.time()
         outputs = []
         for output_tensor in self.output_tensors:
             output = output_tensor.copy_to_cpu()
             outputs.append(output)
 
+        time_gpu_cpu = time.time() - tmp
         if debug:
-            print("{} (gpu->cpu)".format(time.time() - tmp))
+            print("{} (gpu->cpu)".format(time_gpu_cpu))
         tmp = time.time()
         preds = {}
         if self.e2e_algorithm == 'PGNet':
@@ -143,13 +149,15 @@ class TextE2E(object):
         post_result = self.postprocess_op(preds, shape_list)
         points, strs = post_result['points'], post_result['texts']
 
+        time_postproc = time.time() - tmp
         if debug:
-            print("{} (postproc)".format(time.time() - tmp))
+            print("{} (postproc)".format(time_postproc))
 
         # dt_boxes = self.filter_tag_det_res_only_clip(points, ori_im.shape)
         # elapse = time.time() - starttime
         # return dt_boxes, strs, elapse
-        return None, strs, None
+        return None, strs, None, np.array([time_preproc, time_cpu_gpu, time_pred, time_gpu_cpu, time_postproc])
+        # return None, strs, None
 
 
 if __name__ == "__main__":
