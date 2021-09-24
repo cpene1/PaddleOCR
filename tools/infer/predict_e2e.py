@@ -39,11 +39,11 @@ class TextE2E(object):
         # Hardcoded runtime configurations for VTS
         ########################
         args.e2e_algorithm = "PGNet"
-        args.e2e_model_dir = "./PaddleOCR/inference/e2e_server_pgnetA_infer"
-        args.e2e_char_dict_path = "./PaddleOCR/ppocr/utils/ic15_dict.txt"
+        args.e2e_model_dir = "src/PaddleOCR/inference/e2e_server_pgnetA_infer"
+        args.e2e_char_dict_path = "src/PaddleOCR/ppocr/utils/ic15_dict.txt"
         # args.e2e_model_dir = "./src/PaddleOCR/inference/e2e_server_pgnetA_infer"
         # args.e2e_char_dict_path = "./src/PaddleOCR/ppocr/utils/ic15_dict.txt"
-        # args.use_tensorrt = True
+        args.use_tensorrt = True
         ########################
 
         self.args = args
@@ -156,8 +156,8 @@ class TextE2E(object):
         # dt_boxes = self.filter_tag_det_res_only_clip(points, ori_im.shape)
         # elapse = time.time() - starttime
         # return dt_boxes, strs, elapse
-        return None, strs, None, np.array([time_preproc, time_cpu_gpu, time_pred, time_gpu_cpu, time_postproc])
-        # return None, strs, None
+        # return None, strs, None, np.array([time_preproc, time_cpu_gpu, time_pred, time_gpu_cpu, time_postproc])
+        return None, strs, None
 
 
 if __name__ == "__main__":
